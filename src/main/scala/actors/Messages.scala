@@ -1,6 +1,6 @@
 package actors
 
-case class Work()
+case object Work
 
 case class Add(x: Int, y: Int)
 

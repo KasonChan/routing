@@ -5,7 +5,6 @@ import akka.routing.{ActorRefRoutee, RoundRobinRoutingLogic, Router}
 
 /**
  * Created by kasonchan on 1/22/15.
- * Last modified by kasonchan on 1/22/15.
  */
 class Master extends Actor with akka.actor.ActorLogging {
   var router = {
@@ -18,9 +17,13 @@ class Master extends Actor with akka.actor.ActorLogging {
   }
 
   def receive = {
-    case w: Work => {
+    case Work => {
       log.info("Works")
-      router.route(w, sender())
+      router.route(Work, sender())
+    }
+    case Add(x, y) => {
+      log.info(Add(x, y).toString)
+      router.route(Add(x, y), sender())
     }
     case m: String =>
       log.info(m)
