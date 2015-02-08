@@ -21,9 +21,13 @@ class Master extends Actor with akka.actor.ActorLogging {
       log.info("Works")
       router.route(Work, sender())
     }
-    case Add(x, y) => {
-      log.info(Add(x, y).toString)
+    case Add(x: Int, y: Int) => {
+      log.info("Add(" + x + ", " + y + ")")
       router.route(Add(x, y), sender())
+    }
+    case Multiple(x: Int, y: Int) => {
+      log.info("Add(" + x + ", " + y + ")")
+      router.route(Multiple(x, y), sender())
     }
     case m: String =>
       log.info(m)
