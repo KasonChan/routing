@@ -1,9 +1,9 @@
 package demo
 
-import actors.{Add, Worker}
+import actors._
 import akka.actor.{ActorRef, ActorSystem, Props}
 import akka.pattern.ask
-import akka.routing.{RandomPool, RoundRobinPool}
+import akka.routing._
 import akka.util.Timeout
 
 import scala.concurrent.duration._
@@ -16,21 +16,67 @@ object Demo {
   def main(args: Array[String]) {
     val system = ActorSystem("Routers")
 
-    // Round robin
+    //    Round robin
     val roundRobinRouter: ActorRef =
       system.actorOf(RoundRobinPool(2).props(Props[Worker]), "roundRobinRouter")
 
-    // Random pool
+    //    Random pool
     val randomPoolRouter: ActorRef =
       system.actorOf(RandomPool(2).props(Props[Worker]), "randomPoolRouter")
 
+    //    Master round robin
+    val masterRouter: ActorRef =
+      system.actorOf(Props[Master], "masterRouter")
+
+    //    Supervisor smallest mailbox
+    val supervisor: ActorRef = system.actorOf(Props[Supervisor], "supervisorRouter")
+
+
+
+
+
+
+
+
+    //    Broadcast to random pool
+    randomPoolRouter ! Broadcast("Broadcast")
+
+
+
     implicit val timeout = Timeout(100 milliseconds)
+
+    val multiple: Future[Int] = ask(masterRouter, Multiple(147, 123)).mapTo[Int]
+
+    //    Blocking await for multiple
+    val multipleResult: Int = Await.result(multiple, Duration(100, "millis"))
+    println(multipleResult)
 
     val sum: Future[Int] = ask(roundRobinRouter, Add(3, 4)).mapTo[Int]
 
     //    Blocking await for sum
-    val result: Int = Await.result(sum, Duration(100, "millis"))
-    println(result + 5)
+    val sumResult: Int = Await.result(sum, Duration(100, "millis"))
+    println(sumResult + 5)
+
+
+
+    //    Send some works to random pool router
+    randomPoolRouter ! Work
+    randomPoolRouter ! Work
+    randomPoolRouter ! Work
+    randomPoolRouter ! Work
+    randomPoolRouter ! Work
+
+    //    Send some works to round robin router
+    roundRobinRouter ! Work
+    roundRobinRouter ! Work
+    roundRobinRouter ! Work
+    roundRobinRouter ! Work
+    roundRobinRouter ! Work
+
+
+
+    //    Send some works to supervisor
+    supervisor ! Broadcast("Broadcast")
 
     system.shutdown()
   }

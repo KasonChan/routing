@@ -1,11 +1,19 @@
 package actors
 
-import akka.actor.Actor
+import akka.actor.{Props, Actor}
 
 /**
- * Created by kasonchan on 1/22/15.
+ * Created by kasonchan on 2/12/15.
  */
-class Worker extends Actor with akka.actor.ActorLogging {
+class Routee extends Actor with akka.actor.ActorLogging {
+  override def preStart(): Unit = {
+    log.info("Pre-start")
+  }
+
+  override def postStop(): Unit = {
+    log.info("Post-stop")
+  }
+
   def receive = {
     case Work => {
       log.info("Works")
