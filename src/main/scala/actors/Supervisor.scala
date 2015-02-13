@@ -1,6 +1,6 @@
 package actors
 
-import akka.actor.{Terminated, Actor, Props}
+import akka.actor.{Actor, Props}
 import akka.routing._
 
 /**

@@ -14,6 +14,23 @@ import scala.concurrent.{Await, Future}
  */
 object Demo {
   def main(args: Array[String]) {
+    args.size match {
+      case 0 => {
+        val sHostname = "127.0.0.1"
+        val sPort = "2552"
+        println(sHostname + ":" + sPort)
+      }
+      case 2 => {
+        val sHostname = args(0)
+        val sPort = args(1)
+        println(sHostname + ":" + sPort)
+      }
+      case _ => {
+        println("Invalid arguments")
+        System.exit(-1)
+      }
+    }
+
     val system = ActorSystem("Routers")
 
     //    Round robin
@@ -31,17 +48,8 @@ object Demo {
     //    Supervisor smallest mailbox
     val supervisor: ActorRef = system.actorOf(Props[Supervisor], "supervisorRouter")
 
-
-
-
-
-
-
-
     //    Broadcast to random pool
     randomPoolRouter ! Broadcast("Broadcast")
-
-
 
     implicit val timeout = Timeout(100 milliseconds)
 
@@ -57,8 +65,6 @@ object Demo {
     val sumResult: Int = Await.result(sum, Duration(100, "millis"))
     println(sumResult + 5)
 
-
-
     //    Send some works to random pool router
     randomPoolRouter ! Work
     randomPoolRouter ! Work
@@ -72,8 +78,6 @@ object Demo {
     roundRobinRouter ! Work
     roundRobinRouter ! Work
     roundRobinRouter ! Work
-
-
 
     //    Send some works to supervisor
     supervisor ! Broadcast("Broadcast")

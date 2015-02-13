@@ -1,6 +1,6 @@
 package actors
 
-import akka.actor.{Props, Actor}
+import akka.actor.Actor
 
 /**
  * Created by kasonchan on 2/12/15.
