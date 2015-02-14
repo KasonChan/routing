@@ -1,8 +1,9 @@
 package demo
 
-import actors._
-import akka.actor.{ActorRef, ActorSystem, Props}
+import actors.{Routee, _}
+import akka.actor.{ActorRef, ActorSystem, Address, AddressFromURIString, Props}
 import akka.pattern.ask
+import akka.remote.routing.RemoteRouterConfig
 import akka.routing._
 import akka.util.Timeout
 
@@ -32,6 +33,29 @@ object Demo {
     }
 
     val system = ActorSystem("Routers")
+
+    val worker1 = system.actorOf(Props[Routee], "worker1")
+    val worker2 = system.actorOf(Props[Routee], "worker2")
+
+    val addresses = Seq(
+      Address("akka.tcp", "KeyServerSystem", "127.0.0.1", 2552),
+      AddressFromURIString("akka.tcp://othersys@anotherhost:1234"))
+    val server = system.actorOf(
+      RemoteRouterConfig(RoundRobinPool(5), addresses).props(Props[Routee]))
+
+    val paths = List("/user/worker1")
+    val configRouter: ActorRef =
+      system.actorOf(RoundRobinGroup(paths).props(), "configRouter")
+
+    configRouter ! "Hello1"
+    configRouter ! "Hello2"
+    configRouter ! "Hello3"
+    configRouter ! "Hello4"
+    configRouter ! "Hello5"
+
+    server ! "Hello5"
+    server ! "Hello6"
+    server ! "Hello7"
 
     //    Round robin
     val roundRobinRouter: ActorRef =
