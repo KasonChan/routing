@@ -1,7 +1,7 @@
 package demo
 
 import actors.{Routee, _}
-import akka.actor.{ActorRef, ActorSystem, Address, AddressFromURIString, Props}
+import akka.actor._
 import akka.pattern.ask
 import akka.remote.routing.RemoteRouterConfig
 import akka.routing._
@@ -38,14 +38,14 @@ object Demo {
     val worker2 = system.actorOf(Props[Routee], "worker2")
 
     val addresses = Seq(
-      Address("akka.tcp", "KeyServerSystem", "127.0.0.1", 2552),
-      AddressFromURIString("akka.tcp://othersys@anotherhost:1234"))
+      Address("akka.tcp", "KeyServerSystem", "127.0.0.1", 2553))
     val server = system.actorOf(
       RemoteRouterConfig(RoundRobinPool(5), addresses).props(Props[Routee]))
 
-    val paths = List("/user/worker1")
+    //    ScatterGatherFirstCompletedGroup
+    val paths: List[String] = List("/user/worker1", "/user/worker2")
     val configRouter: ActorRef =
-      system.actorOf(RoundRobinGroup(paths).props(), "configRouter")
+      system.actorOf(ScatterGatherFirstCompletedGroup(paths, within = 10.seconds).props(), "configRouter")
 
     configRouter ! "Hello1"
     configRouter ! "Hello2"
@@ -68,6 +68,8 @@ object Demo {
     //    Master round robin
     val masterRouter: ActorRef =
       system.actorOf(Props[Master], "masterRouter")
+
+    masterRouter ! "Hi"
 
     //    Supervisor smallest mailbox
     val supervisor: ActorRef = system.actorOf(Props[Supervisor], "supervisorRouter")
